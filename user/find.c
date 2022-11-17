@@ -4,7 +4,7 @@
 #include "kernel/fs.h"
 
 void
-cmp_file(char* name, char* buf) { 
+cmp_file(char* name, char* buf, char *wb) { 
   char *p;
 
   // Find first character after last slash.
@@ -12,7 +12,12 @@ cmp_file(char* name, char* buf) {
     ;
   p++;
   if (strcmp(p, name) == 0) {
-	printf("%s\n", buf);
+	// printf("%s\n", buf);
+	int len = strlen(wb);
+	strcpy(&wb[len], buf);
+	len = strlen(wb);
+	wb[len] = '\n';
+	wb[len + 1] = 0;
   }
 
   return;
@@ -20,7 +25,7 @@ cmp_file(char* name, char* buf) {
 
 
 void
-find_file(char* name, char* buf)
+find_file(char* name, char* buf, char* wb)
 {
   char *p;
   int fd;
@@ -36,7 +41,7 @@ find_file(char* name, char* buf)
     close(fd);
     return;
   }
-  cmp_file(name, buf);
+  cmp_file(name, buf, wb);
 
   switch(st.type){
     case T_FILE:
@@ -60,7 +65,7 @@ find_file(char* name, char* buf)
         printf("ls: cannot stat %s\n", buf);
         continue;
       }
-	  find_file(name, buf); 
+	  find_file(name, buf, wb); 
     }
     break;
   }
@@ -71,8 +76,11 @@ int
 main(int argc, char *argv[])
 {
   char buf[512];
+  char write_buf[512];
   memcpy(buf, argv[1], strlen(argv[1]));
 
-  find_file(argv[2], buf);
+  find_file(argv[2], buf, write_buf);
+  write(1, write_buf, strlen(write_buf));
+  sleep(5);
   exit(0);
 }
