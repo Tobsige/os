@@ -20,49 +20,49 @@ countfree()
 {
   uint64 sz0 = (uint64)sbrk(0);
   struct sysinfo info;
-  int n = 0;
+int n = 0;
 
-  while(1){
-    if((uint64)sbrk(PGSIZE) == 0xffffffffffffffff){
-      break;
-    }
-    n += PGSIZE;
-  }
-  sinfo(&info);
-  if (info.freemem != 0) {
-    printf("FAIL: there is no free mem, but sysinfo.freemem=%d\n",
-      info.freemem);
-    exit(1);
-  }
-  sbrk(-((uint64)sbrk(0) - sz0));
-  return n;
+while(1){
+if((uint64)sbrk(PGSIZE) == 0xffffffffffffffff){
+break;
+}
+n += PGSIZE;
+}
+sinfo(&info);
+if (info.freemem != 0) {
+printf("FAIL: there is no free mem, but sysinfo.freemem=%d\n",
+info.freemem);
+exit(1);
+}
+sbrk(-((uint64)sbrk(0) - sz0));
+return n;
 }
 
 void
 testmem() {
-  struct sysinfo info;
-  uint64 n = countfree();
-  
-  sinfo(&info);
+struct sysinfo info;
+uint64 n = countfree();
 
-  if (info.freemem!= n) {
-    printf("FAIL: free mem %d (bytes) instead of %d\n", info.freemem, n);
-    exit(1);
-  }
-  
-  if((uint64)sbrk(PGSIZE) == 0xffffffffffffffff){
-    printf("sbrk failed");
-    exit(1);
-  }
+sinfo(&info);
 
-  sinfo(&info);
-    
-  if (info.freemem != n-PGSIZE) {
-    printf("FAIL: free mem %d (bytes) instead of %d\n", n-PGSIZE, info.freemem);
-    exit(1);
-  }
-  
-  if((uint64)sbrk(-PGSIZE) == 0xffffffffffffffff){
+if (info.freemem!= n) {
+printf("FAIL1: free mem %d (bytes) instead of %d\n", info.freemem, n);
+exit(1);
+}
+
+if((uint64)sbrk(PGSIZE) == 0xffffffffffffffff){
+printf("sbrk failed");
+exit(1);
+}
+
+sinfo(&info);
+
+if (info.freemem != n-PGSIZE) {
+printf("FAIL2: free mem %d (bytes) instead of %d\n", n-PGSIZE, info.freemem);
+exit(1);
+}
+
+if((uint64)sbrk(-PGSIZE) == 0xffffffffffffffff){
     printf("sbrk failed");
     exit(1);
   }
@@ -70,7 +70,7 @@ testmem() {
   sinfo(&info);
     
   if (info.freemem != n) {
-    printf("FAIL: free mem %d (bytes) instead of %d\n", n, info.freemem);
+    printf("FAIL3: free mem %d (bytes) instead of %d\n", n, info.freemem);
     exit(1);
   }
 }
@@ -125,7 +125,9 @@ main(int argc, char *argv[])
 {
   printf("sysinfotest: start\n");
   testcall();
+  printf("calltest: OK\n"); 
   testmem();
+  printf("testmem: OK\n"); 
   testproc();
   printf("sysinfotest: OK\n");
   exit(0);
