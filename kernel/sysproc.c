@@ -109,7 +109,7 @@ sys_pgaccess(void)
 	  *pte = *pte & (~PTE_A);
 	}
   } 
-
+  printf("access %x\n", access);
   if (copyout(p->pagetable, addr, (char *)&access, (uint64)(sizeof(access))) < 0)
   return -1;
 

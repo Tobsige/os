@@ -67,6 +67,7 @@ pgaccess_test()
     printf ("%x abits\n", abits);
     err("incorrect access bits set");
   }
+  printf ("%x abits\n", abits);
   free(buf);
   printf("pgaccess_test: OK\n");
 }
