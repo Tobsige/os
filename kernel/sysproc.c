@@ -81,6 +81,38 @@ int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
+  uint64 first_page;
+  int num;
+  uint64 addr;
+  uint32 access = 0;
+
+  struct proc *p = myproc();
+
+  if (argaddr(0, &first_page))
+	return -1;
+  if (argint(1, &num) < 0)
+    return -1;
+  if (num > 32) {
+    printf("too many pages\n");
+	return -1;
+  }
+  if (argaddr(2, &addr) < 0)
+    return -1;
+
+  for (int i = 0; i < num; i++) {
+    pte_t *pte;
+    pte = walk(p->pagetable, 
+			(uint64)(first_page + (uint64)(i * PGSIZE)), 1);
+	if (*pte & PTE_A) {
+	  printf("accessed %d\n", i+1);
+	  access = access | (1 << i);
+	  *pte = *pte & (~PTE_A);
+	}
+  } 
+
+  if (copyout(p->pagetable, addr, (char *)&access, (uint64)(sizeof(access))) < 0)
+  return -1;
+
   return 0;
 }
 #endif
@@ -107,3 +139,4 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
