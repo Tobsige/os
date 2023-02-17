@@ -36,6 +36,12 @@ periodic()
   printf("alarm!\n");
   sigreturn();
 }
+/*
+void
+f()
+{
+  printf("f");
+}*/
 
 // tests whether the kernel calls
 // the alarm handler even a single time.

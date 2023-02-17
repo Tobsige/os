@@ -77,8 +77,16 @@ usertrap(void)
     exit(-1);
 
   // give up the CPU if this is a timer interrupt.
-  if(which_dev == 2)
+  if(which_dev == 2) {
     yield();
+  }
+  // for lab
+  if (which_dev == 2 && p->itv && ++(p->numt) == p->itv && p->ret == 0) {
+	p->numt = 0;
+	p->ret = 1;
+	memmove((void*)p->trpfm, (void*)p->trapframe, sizeof(struct trapframe));
+	p->trapframe->epc = p->handler; 
+  }
 
   usertrapret();
 }
@@ -90,7 +98,6 @@ void
 usertrapret(void)
 {
   struct proc *p = myproc();
-
   // we're about to switch the destination of traps from
   // kerneltrap() to usertrap(), so turn off interrupts until
   // we're back in user space, where usertrap() is correct.
