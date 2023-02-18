@@ -79,7 +79,7 @@ usertrap(void)
 	   	char *mem = kalloc();
 		memmove(mem, (char*)pa, PGSIZE);
 		uint flags = PTE_FLAGS(*pte | PTE_W & ~PTE_C);
-        if(mappages(new, i, PGSIZE, (uint64)mem, flags) != 0){
+        if(mappages(p->pagetable, i, PGSIZE, (uint64)mem, flags) != 0){
           kfree(mem);
         } 
 	}
