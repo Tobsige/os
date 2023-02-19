@@ -15,6 +15,8 @@ extern char etext[];  // kernel.ld sets this to end of kernel code.
 
 extern char trampoline[]; // trampoline.S
 
+extern int num[32*1024];
+
 // Make a direct-map page table for the kernel.
 pagetable_t
 kvmmake(void)
@@ -148,8 +150,11 @@ mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
   for(;;){
     if((pte = walk(pagetable, a, 1)) == 0)
       return -1;
-    if(*pte & PTE_V)
+    if((*pte & PTE_V) && !(*pte & PTE_C)) {
+	  printf ("map %d %d %d %d %d %d %d\n", *pte &PTE_V, *pte & PTE_W, *pte & PTE_C, perm &PTE_V, perm & PTE_W, perm & PTE_C, perm & PTE_D);
+	  backtrace();
       panic("mappages: remap");
+	}
     *pte = PA2PTE(pa) | perm | PTE_V;
     if(a == last)
       break;
@@ -303,7 +308,7 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
   pte_t *pte;
   uint64 pa, i;
   uint flags;
-  char *mem;
+  //char *mem;
 
   for(i = 0; i < sz; i += PGSIZE){
     if((pte = walk(old, i, 0)) == 0)
@@ -311,8 +316,8 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
     if((*pte & PTE_V) == 0)
       panic("uvmcopy: page not present");
     pa = PTE2PA(*pte);
-	*pte &= ~PTE_W;
-    flags = PTE_FLAGS(*pte | PTE_C);
+	*pte = (*pte & ~PTE_W) | PTE_C;
+    flags = PTE_FLAGS(*pte);
     /*if((mem = kalloc()) == 0)
       goto err;
     memmove(mem, (char*)pa, PGSIZE);
@@ -323,6 +328,7 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
 	if (mappages(new, i, PGSIZE, pa, flags) != 0) {
 	  goto err;
     }   
+	num[(pa - KERNBASE) / PGSIZE]++; 
   }
   return 0;
 
